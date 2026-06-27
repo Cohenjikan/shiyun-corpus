@@ -1,0 +1,37 @@
+shiyun-corpus — licensing
+
+This repository contains TWO kinds of material with DIFFERENT terms:
+
+1. ORIGINAL WORK of this project — the build/validation scripts (scripts/**),
+   the curated annotations and corrections (curated/**), the schema, and the
+   documentation — is released under the MIT License (below).
+
+2. POEM TEXT DATA (data/**) is aggregated from upstream parent corpora and is
+   NOT uniformly MIT. Each record carries a `provenance.license` field. Classical
+   texts in data/ are public-domain (PD). Modern / in-copyright material is kept
+   separately under data/_restricted/ and is NOT covered by the MIT grant below;
+   see SOURCES.md for the per-source terms (Werneror MIT-tooling/PD-text,
+   yuxqiu Apache-2.0, sheepzh non-commercial). Respect each upstream's license.
+
+-------------------------------------------------------------------------------
+MIT License (applies to item 1 above — scripts, curated annotations, docs)
+
+Copyright (c) 2026 Cohenjikan (shiyun-corpus)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

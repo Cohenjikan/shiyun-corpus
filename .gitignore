@@ -1,0 +1,17 @@
+# ── 隔离层:现代/在册作者(yuxqiu / sheepzh / Werneror 近现代·当代),默认不公开 ──
+# 这些条目著作权状态复杂(life+50 未到 / 非商用 / Apache 仅覆盖打包)。默认隔离,
+# 由 owner 决定是否纳入公开仓:要发布则删去下面两行(保留 README 说明)。
+data/_restricted/*
+!data/_restricted/README.md
+
+# 隔离层 curated 条目(在册/受版权作者正文,默认不公开;build.mjs 本地仍读取)
+curated/*.restricted.jsonl
+
+# 构建中间产物(可由 build.mjs 复现;且含上游本地绝对路径)
+data/_build_report.json
+
+# 杂项
+node_modules/
+*.log
+.DS_Store
+Thumbs.db

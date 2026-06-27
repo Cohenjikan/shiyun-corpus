@@ -1,0 +1,6 @@
+# 保证跨平台 LF 行尾,避免 CRLF 改写大数据分片(否则 diff/哈希全乱)
+*.jsonl text eol=lf
+*.mjs   text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+*.txt   text eol=lf

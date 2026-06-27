@@ -1,0 +1,16 @@
+{
+  "name": "shiyun-corpus",
+  "version": "1.0.0",
+  "description": "独立、完整、带 provenance 标注的简体中文古典诗词语料库 — A standalone, complete, provenance-annotated Simplified-Chinese classical poetry corpus (诗/词/曲, no prose).",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "build": "node --max-old-space-size=4096 scripts/build.mjs",
+    "validate": "node --max-old-space-size=4096 scripts/validate.mjs",
+    "all": "node --max-old-space-size=4096 scripts/build.mjs && node --max-old-space-size=4096 scripts/validate.mjs"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {},
+  "repository": { "type": "git", "url": "https://github.com/Cohenjikan/shiyun-corpus.git" },
+  "keywords": ["chinese-poetry", "诗词", "corpus", "provenance", "唐诗宋词", "散曲", "dataset"]
+}
