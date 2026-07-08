@@ -109,9 +109,12 @@ let br = null;
 try { br = JSON.parse(readFileSync(join(OUT, "_build_report.json"), "utf8")); } catch { warn("_build_report.json 缺失 — curated 应用情况无法核对"); }
 if (br) {
   for (const c of br.curated.corrections) {
-    if (c.applied === 0) err(`correction 未命中底库(applied=0): "${c.matchFirstLine}" → ${c.replace}`);
-    if (c.applied > 1) err(`correction 命中不唯一(applied=${c.applied}): "${c.matchFirstLine}" — 违反唯一命中铁律`);
-    if (c.findMiss) warn(`correction 首句匹配但 find 不在正文 ×${c.findMiss}: "${c.matchFirstLine}"`);
+    // expectHits:订正条目声明的合法命中数。缺省 1 = 原「唯一命中」铁律;
+    // >1 必须在订正条目里显式声明(如同一错字在上游单首版+合并版各出现一次)——防误伤守卫不降,
+    // 命中数偏离声明(无论多或少)与 findMiss 均为致命。
+    const expect = c.expectHits ?? 1;
+    if (c.applied !== expect) err(`correction 命中数与声明不符(applied=${c.applied}, 期望=${expect}): "${c.matchFirstLine}" → ${c.replace}`);
+    if (c.findMiss) err(`correction 首句匹配但 find 不在正文 ×${c.findMiss}: "${c.matchFirstLine}"`);
   }
 }
 if (sampleChecked && sampleBadId === 0) {} // ok
@@ -204,7 +207,7 @@ ${(br?.curated?.corrections || []).map((c) => { const restricted = /in-copyright
 | 4 | 去重报告(dup_group,不自动删) | ✅ (见 §5) |
 | 5 | provenance 齐全(type/source;curated 有 note;订正有 corrected_from) | ${errors.some((e) => /provenance|curated|订正/.test(e)) ? "❌" : "✅"} |
 | 6 | 许可:公开层=PD,隔离层有 license | ${stat.publicNonPD || stat.restrictedNoLicense ? "❌" : "✅"} |
-| 7 | corrections 唯一命中底库 | ${errors.some((e) => /correction/.test(e)) ? "❌" : "✅"} |
+| 7 | corrections 命中数与声明一致(expectHits,缺省 1=唯一命中) | ${errors.some((e) => /correction/.test(e)) ? "❌" : "✅"} |
 
 ${errors.length ? `### 致命错误(前 ${Math.min(errors.length, 60)} 条)\n\n${errors.map((e) => `- ${e}`).join("\n")}` : ""}
 ${warnings.length ? `\n### 警告\n\n${warnings.map((w) => `- ${w}`).join("\n")}` : ""}

@@ -662,7 +662,7 @@
 {"id":"2bd286cb","name":"梁有誉","dynasty":"ming","poemCount":272,"genres":["shi"],"has_curated":false}
 {"id":"1e20c700","name":"梁寅","dynasty":"ming","poemCount":270,"genres":["ci","shi"],"has_curated":false}
 {"id":"d10be8be","name":"仲并","dynasty":"song","poemCount":270,"genres":["ci","shi"],"has_curated":false}
-{"id":"5b6c3ff9","name":"高适","dynasty":"tang","poemCount":269,"genres":["shi"],"has_curated":false}
+{"id":"5b6c3ff9","name":"高适","dynasty":"tang","poemCount":269,"genres":["shi"],"has_curated":true}
 {"id":"515d2cc1","name":"史承谦","dynasty":"qing","poemCount":269,"genres":["ci","shi"],"has_curated":false}
 {"id":"78bcd0a4","name":"阳枋","dynasty":"song","poemCount":268,"genres":["ci","shi"],"has_curated":false}
 {"id":"413e735d","name":"周霆震","dynasty":"yuan","poemCount":266,"genres":["ci","shi"],"has_curated":false}
@@ -6469,6 +6469,7 @@
 {"id":"8010cba1","name":"顾大武","dynasty":"ming","poemCount":6,"genres":["shi"],"has_curated":false}
 {"id":"749ac0c0","name":"倪学究钜","dynasty":"ming","poemCount":6,"genres":["shi"],"has_curated":false}
 {"id":"a8aae331","name":"谭元春","dynasty":"ming","poemCount":6,"genres":["shi"],"has_curated":false}
+{"id":"9588f2c4","name":"张居正","dynasty":"ming","poemCount":6,"genres":["shi"],"has_curated":true}
 {"id":"266eb588","name":"费元禄","dynasty":"ming","poemCount":6,"genres":["ci","shi"],"has_curated":false}
 {"id":"8933ea56","name":"李玮","dynasty":"ming","poemCount":6,"genres":["shi"],"has_curated":false}
 {"id":"e3d2a151","name":"朱邦宪","dynasty":"ming","poemCount":6,"genres":["shi"],"has_curated":false}
@@ -7367,7 +7368,6 @@
 {"id":"ee82d9dc","name":"顾大猷","dynasty":"ming","poemCount":5,"genres":["shi"],"has_curated":false}
 {"id":"122160a0","name":"胡梅","dynasty":"ming","poemCount":5,"genres":["shi"],"has_curated":false}
 {"id":"fcb7f2df","name":"帅机","dynasty":"ming","poemCount":5,"genres":["shi"],"has_curated":false}
-{"id":"9588f2c4","name":"张居正","dynasty":"ming","poemCount":5,"genres":["shi"],"has_curated":true}
 {"id":"6619f623","name":"万表","dynasty":"ming","poemCount":5,"genres":["shi"],"has_curated":false}
 {"id":"181d9b9c","name":"李三才","dynasty":"ming","poemCount":5,"genres":["shi"],"has_curated":false}
 {"id":"2c9c1df9","name":"王养端","dynasty":"ming","poemCount":5,"genres":["shi"],"has_curated":false}
@@ -12081,7 +12081,7 @@
 {"id":"8aced0b2","name":"邓或之","dynasty":"yuan","poemCount":2,"genres":["shi"],"has_curated":false}
 {"id":"20c4372b","name":"李仲南","dynasty":"yuan","poemCount":2,"genres":["shi"],"has_curated":false}
 {"id":"2bbdd808","name":"仇仁远","dynasty":"yuan","poemCount":2,"genres":["shi"],"has_curated":false}
-{"id":"28a217e3","name":"唐珙","dynasty":"yuan","poemCount":2,"genres":["shi"],"has_curated":false}
+{"id":"28a217e3","name":"唐珙","dynasty":"yuan","poemCount":2,"genres":["shi"],"has_curated":true}
 {"id":"5ba5a4d4","name":"徐秋云","dynasty":"yuan","poemCount":2,"genres":["shi"],"has_curated":false}
 {"id":"3b6c6e76","name":"达德越士","dynasty":"yuan","poemCount":2,"genres":["shi"],"has_curated":false}
 {"id":"91e10d4e","name":"张九思","dynasty":"yuan","poemCount":2,"genres":["shi"],"has_curated":false}

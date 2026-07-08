@@ -256,7 +256,15 @@ console.log("\n[2/3] yuxqiu modern …", MODERN_ROOT);
         else if (typeof poem.paragraphs === "string") body = poem.paragraphs;
         else continue;
         const dyn = modernDyn(author);
-        record({ title: poem.title || "", author, dynRaw: "现代", dyn, body, genre: deriveGenre(poem.title || "", { freeVerse }), layer: "restricted", prov: { type: "upstream", source: `yuxqiu/${dir}/${file}`, license, note: "现代作者作品多受著作权保护;Apache-2.0 覆盖数据集打包,文本著作权归原作者。", corrected_from: null } });
+        // 先试 correction(如 毛泽东 到韶山)。保桶/保层:现代路径的 dyn/layer 是路径本身定的(modernDyn/restricted),
+        // 忽略 fix.dynOverride/fix.layer——否则订正条目里的 dynasty(如 jinxiandai)会把「当代」副本改桶,
+        // 导致「作者|dangdai」这个诗人从下游消失、断永久链接。genre 同理维持本路径原判,除非订正条目明确给了 genre。
+        const fix = applyCorrection(author, body);
+        if (fix) {
+          record({ title: poem.title || "", author, dynRaw: "现代", dyn, body: fix.body, genre: fix.genreOverride || deriveGenre(poem.title || "", { freeVerse }), layer: "restricted", prov: fix.prov });
+        } else {
+          record({ title: poem.title || "", author, dynRaw: "现代", dyn, body, genre: deriveGenre(poem.title || "", { freeVerse }), layer: "restricted", prov: { type: "upstream", source: `yuxqiu/${dir}/${file}`, license, note: "现代作者作品多受著作权保护;Apache-2.0 覆盖数据集打包,文本著作权归原作者。", corrected_from: null } });
+        }
       }
     }
     console.log(`  ${dir}: +${stat.total - n0}  (total=${stat.total})`);
@@ -285,7 +293,14 @@ console.log("\n[3/3] sheepzh modern …", SHEEPZH);
       if (rows[bodyStart]?.startsWith("date:")) bodyStart++;
       const body = rows.slice(bodyStart).join("\n").replace(/^\n+|\n+$/g, "");
       if (!body.trim()) { noBody++; continue; }
-      record({ title, author, dynRaw: "现代", dyn, body, genre: deriveGenre(title, { freeVerse: true }), layer: "restricted", prov: { type: "upstream", source: `sheepzh/${d.name}/${f}`, license: "non-commercial", note: "sheepzh/poetry:文本著作权归原作者,非商用。", corrected_from: null } });
+      // 先试 correction。保桶/保层:同 yuxqiu 路径——忽略 fix.dynOverride/fix.layer,
+      // dyn 恒为 modernDyn(author)、layer 恒为 restricted,避免订正条目把现代副本改桶导致下游诗人消失。
+      const fix = applyCorrection(author, body);
+      if (fix) {
+        record({ title, author, dynRaw: "现代", dyn, body: fix.body, genre: fix.genreOverride || deriveGenre(title, { freeVerse: true }), layer: "restricted", prov: fix.prov });
+      } else {
+        record({ title, author, dynRaw: "现代", dyn, body, genre: deriveGenre(title, { freeVerse: true }), layer: "restricted", prov: { type: "upstream", source: `sheepzh/${d.name}/${f}`, license: "non-commercial", note: "sheepzh/poetry:文本著作权归原作者,非商用。", corrected_from: null } });
+      }
     }
   }
   console.log(`  sheepzh: +${stat.total - n0}  junk-folders=${badName} empty=${noBody}  (total=${stat.total})`);
@@ -336,7 +351,7 @@ const buildReport = {
   poets: { public: poetRowsPublic.length, restricted: poetRowsRestricted.length },
   curated: {
     additions: additions.length,
-    corrections: corrections.map((c) => ({ matchFirstLine: c.matchFirstLine, find: c.find, replace: c.replace, applied: c.applied || 0, findMiss: c.findMiss || 0, license: c.license })),
+    corrections: corrections.map((c) => ({ matchFirstLine: c.matchFirstLine, find: c.find, replace: c.replace, applied: c.applied || 0, findMiss: c.findMiss || 0, expectHits: c.expectHits ?? 1, license: c.license })), // expectHits:声明合法命中数,缺省 1(validate 铁律据此核对)
   },
   shardCapMB: SHARD_CAP / 1024 / 1024,
   files: fileList.sort((a, b) => a.file.localeCompare(b.file)),

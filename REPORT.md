@@ -6,8 +6,8 @@
 
 **✅ PASS — 全部致命校验通过**
 
-- 总记录数:**970,324**
-- 公开层(PD 古典):**763,545**　|　隔离层(现代/在册):**206,779**
+- 总记录数:**970,325**
+- 公开层(PD 古典):**763,546**　|　隔离层(现代/在册):**206,779**
 - 诗人:公开 28156 · 隔离 5302
 - id 抽检:复算 973 条,不一致 0 条
 
@@ -15,7 +15,7 @@
 
 | 层 | 记录数 | 占比 |
 |---|---:|---:|
-| public (data/) | 763,545 | 78.69% |
+| public (data/) | 763,546 | 78.69% |
 | restricted (data/_restricted/) | 206,779 | 21.31% |
 
 来源 (provenance.source 前缀):
@@ -28,12 +28,12 @@
 - `Werneror/明_1.csv` — 59,478
 - `Werneror/明_2.csv` — 59,000
 - `Werneror/明_4.csv` — 59,000
-- `Werneror/唐.csv` — 49,195
+- `Werneror/唐.csv` — 49,193
 - `Werneror/清_1.csv` — 45,091
 - `Werneror/清_2.csv` — 44,998
-- `Werneror/元.csv` — 37,375
-- `yuxqiu/modern times` — 28,419
+- `Werneror/元.csv` — 37,374
 - `Werneror/近现代.csv` — 28,418
+- `yuxqiu/modern times` — 28,418
 - `Werneror/当代.csv` — 28,219
 - `Werneror/明末清初.csv` — 17,700
 - `Werneror/元末明初.csv` — 15,736
@@ -55,12 +55,15 @@
 - `Werneror/汉.csv` — 363
 - `Werneror/宋末金初.csv` — 234
 - `Werneror/辽.csv` — 22
+- `《全唐诗》通行本` — 2
 - `Werneror/秦.csv` — 2
-- `《毛泽东诗词集》(人民文学出版社,中央文献研究室编)` — 1
+- `《毛泽东诗词集》(人民文学出版社,中央文献研究室编)` — 2
+- `《全元诗》` — 1
 - `Werneror/魏晋末南北朝初.csv` — 1
 - `《小仓山房诗文集》(袁枚,乾隆刻本)` — 1
 - `《全元散曲》(隋树森编,中华书局)` — 1
 - `《张太岳集》(张居正)` — 1
+- `朱东润《张居正大传》所记轶事(嘉靖十六年顾璘宅题竹)` — 1
 - `《迦陵诗词稿》(叶嘉莹)` — 1
 
 ## 2. 按朝代
@@ -77,7 +80,7 @@
 | 辽 | liao | 22 | 0.00% |
 | 金 | jin | 5,760 | 0.59% |
 | 元 | yuan | 37,376 | 3.85% |
-| 明 | ming | 252,694 | 26.04% |
+| 明 | ming | 252,695 | 26.04% |
 | 清 | qing | 107,790 | 11.11% |
 | 近现代 | jinxiandai | 59,088 | 6.09% |
 | 当代 | dangdai | 147,691 | 15.22% |
@@ -86,7 +89,7 @@
 
 | genre | 含义 | 记录数 | 占比 |
 |---|---|---:|---:|
-| shi | 诗 | 791,378 | 81.56% |
+| shi | 诗 | 791,379 | 81.56% |
 | ci | 词 | 93,667 | 9.65% |
 | xinshi | 现代新诗/自由诗 | 84,905 | 8.75% |
 | qu | 曲(散曲) | 374 | 0.04% |
@@ -95,23 +98,23 @@
 
 | license | 记录数 | 层 |
 |---|---:|---|
-| PD | 763,545 | public |
+| PD | 763,546 | public |
 | ⚠in-copyright(verify) | 89,842 | restricted |
 | non-commercial | 80,596 | restricted |
-| Apache-2.0 | 36,339 | restricted |
-| ⚠in-copyright(2027) | 1 | restricted |
+| Apache-2.0 | 36,338 | restricted |
+| ⚠in-copyright(2027) | 2 | restricted |
 | ⚠in-copyright(2074) | 1 | restricted |
 
-provenance.type:upstream=970,319 · curated=5
+provenance.type:upstream=970,315 · curated=10
 
 ## 5. 去重 (dup_group,同 author+正文 归一组,**不删**)
 
 > 仅作报告,交消费者决定是否去重(诗云正因刻意不去重而有陆游虚高)。
 
-- 去重组数(size≥2):**34,249**,涉及记录 **68,512**(7.06%)
+- 去重组数(size≥2):**34,250**,涉及记录 **68,514**(7.06%)
 - 组规模分布:
-  - size 2: 34,242 组
-  - size 1(unique): 901,812 组
+  - size 2: 34,243 组
+  - size 1(unique): 901,811 组
   - size 3-5: 6 组
   - size 6-10: 1 组
   - size 11-50: 0 组
@@ -144,12 +147,14 @@ provenance.type:upstream=970,319 · curated=5
 
 ## 7. curated 校勘层
 
-- additions(补录):**4** 条
+- additions(补录):**5** 条
 - corrections(订正):
 
 | matchFirstLine | find → replace | applied | license |
 |---|---|---:|---|
-| （restricted·正文已隐去） | — | 1 | ⚠in-copyright(2027) |
+| 十里黄云白日曛 | 十里黄云白日曛 → 千里黄云白日曛 | 2 | PD |
+| 玉箫吹老洞庭波 | 玉箫吹老洞庭波 → 西风吹老洞庭波 | 1 | PD |
+| （restricted·正文已隐去） | — | 2 | ⚠in-copyright(2027) |
 
 ## 8. §7 验收清单逐条
 
@@ -161,7 +166,7 @@ provenance.type:upstream=970,319 · curated=5
 | 4 | 去重报告(dup_group,不自动删) | ✅ (见 §5) |
 | 5 | provenance 齐全(type/source;curated 有 note;订正有 corrected_from) | ✅ |
 | 6 | 许可:公开层=PD,隔离层有 license | ✅ |
-| 7 | corrections 唯一命中底库 | ✅ |
+| 7 | corrections 命中数与声明一致(expectHits,缺省 1=唯一命中) | ✅ |
 
 
 
