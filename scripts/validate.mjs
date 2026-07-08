@@ -38,6 +38,16 @@ const HEX16 = /^[0-9a-f]{16}$/, HEX12 = /^[0-9a-f]{12}$/;
 const PLACEHOLDER = /[�■□]|\?/;
 let sampleChecked = 0, sampleBadId = 0; // id 复算抽检
 
+// ── canonical 层校验累加(G1 步骤4) ──────────────────────────────────────────
+// 注:id 并非全局唯一(上游本就存在同 author+dynasty+title+body 的verbatim重出,详见 REPORT §5/§10;
+// merges 会让别名行改挂正身后与正身行 id 相同属预期——不当作 id 唯一性错误),
+// 故"canonical_id 指向的行必须 canonical"改用"该 id 是否存在至少一行 canonical"来判定,不做脆弱的 last-write-wins 查找。
+const idHasCanonical = new Set();      // 出现过 canonical!==false 的 id 集合
+const canonicalIdRefs = new Map();     // canonical_id -> 引用次数(用于核对目标真实存在)
+let exactDupLines = 0, totalTitleLines = 0;
+const perAuthorExact = new Map(), perAuthorTotal = new Map();
+const mergedFromPairs = new Set();     // "author|dynasty" 出现过 provenance.merged_from 的别名对(供 merges 核对用)
+
 for (const { file, abs } of files) {
   const layer = file.startsWith("_restricted/") ? "restricted" : "public";
   const text = readFileSync(abs, "utf8");
@@ -89,6 +99,29 @@ for (const { file, abs } of files) {
     if (n === 2) dupSample.set(dg, { author: r.author, title: r.title });
     // id 抽检(每 997 条复算一次)
     if (stat.total % 997 === 0) { sampleChecked++; if (sha1(`${r.author}|${r.dynasty}|${r.title}|${r.body}`).slice(0, 16) !== r.id) { sampleBadId++; err(`${file}:${ln} id 复算不一致`); } }
+
+    // 7) canonical 层(缺省 true;false 时必须是 (a)精确重复 xor (b)组诗总题 二选一,不可两者皆无/皆有)
+    if (r.canonical === false) {
+      const hasId = r.canonical_id != null, hasNote = r.canonical_note != null;
+      if (hasId === hasNote) err(`${file}:${ln} canonical:false 但 canonical_id/canonical_note 应恰有其一(a类精确重复=id,b类组诗总题=note): id=${r.canonical_id} note=${r.canonical_note}`);
+      if (hasId) {
+        if (!HEX16.test(r.canonical_id)) err(`${file}:${ln} canonical_id 非法(应 16hex): ${r.canonical_id}`);
+        canonicalIdRefs.set(r.canonical_id, (canonicalIdRefs.get(r.canonical_id) || 0) + 1);
+        exactDupLines++;
+        perAuthorExact.set(r.author, (perAuthorExact.get(r.author) || 0) + 1);
+      } else {
+        totalTitleLines++;
+        perAuthorTotal.set(r.author, (perAuthorTotal.get(r.author) || 0) + 1);
+      }
+    } else if (r.canonical !== undefined) {
+      err(`${file}:${ln} canonical 字段值非法(应缺省或 false): ${r.canonical}`);
+    } else {
+      idHasCanonical.add(r.id); // 缺省 true(未写字段)
+    }
+    if (r.provenance?.merged_from) {
+      const mf = r.provenance.merged_from;
+      mergedFromPairs.add(`${mf.author}|${mf.dynasty}`);
+    }
   }
 }
 
@@ -118,6 +151,43 @@ if (br) {
   }
 }
 if (sampleChecked && sampleBadId === 0) {} // ok
+
+// ── canonical_id 目标校验:引用的 id 必须真实存在,且该 id 至少一行 canonical(不做脆弱的 last-write-wins 单行查找,
+// 因 merges 会让别名行与正身行 title+body+author+dynasty 全同 → id 相同,属预期,见上方 idHasCanonical 采集口径) ──
+for (const [id, refCount] of canonicalIdRefs) {
+  if (!idHasCanonical.has(id)) err(`canonical_id 引用的 id 不存在或该 id 下无 canonical 行(链式别名或目标缺失): ${id} (被引用 ${refCount} 次)`);
+}
+
+// ── merges 校验:别名目标(canonical_author,canonical_dynasty)必须真实存在于诗人库,且不得自身也是别名(禁链式合并) ──
+const CURATED = join(ROOT, "curated");
+function loadJsonlLocal(path) {
+  if (!existsSync(path)) return [];
+  return readFileSync(path, "utf8").split(/\r?\n/).filter((l) => l.trim()).map((l) => JSON.parse(l));
+}
+const mergesDecl = loadJsonlLocal(join(CURATED, "merges.jsonl"));
+const aliasKeySet = new Set(mergesDecl.map((m) => `${m.alias_author}|${m.alias_dynasty}`));
+// 正身诗人是否真实存在:从 poets.jsonl(公开+隔离)收集所有「非别名行」的 (name,dynasty)
+function loadPoetRows(dir) {
+  const p = join(dir, "poets.jsonl");
+  if (!existsSync(p)) return [];
+  return readFileSync(p, "utf8").split(/\r?\n/).filter((l) => l.trim()).map((l) => JSON.parse(l));
+}
+const poetRows = [...loadPoetRows(OUT), ...loadPoetRows(OUT_RESTRICTED)];
+const realPoetKeys = new Set(poetRows.filter((p) => p.mergedInto == null).map((p) => `${p.name}|${p.dynasty}`));
+const aliasPoetRows = poetRows.filter((p) => p.mergedInto != null);
+for (const m of mergesDecl) {
+  const targetKey = `${m.canonical_author}|${m.canonical_dynasty}`;
+  if (!realPoetKeys.has(targetKey)) err(`merges 目标不存在于诗人库(非真实正身): ${m.alias_author}|${m.alias_dynasty} → ${targetKey}`);
+  if (aliasKeySet.has(targetKey)) err(`merges 目标本身也是别名(禁链式合并): ${m.alias_author}|${m.alias_dynasty} → ${targetKey}`);
+  if (m.canonical_author === m.alias_author && m.canonical_dynasty === m.alias_dynasty) err(`merges 别名与正身相同(自我合并): ${m.alias_author}|${m.alias_dynasty}`);
+}
+// poets.jsonl 里每一条别名行(mergedInto)也必须指向真实正身、且 poemCount=0
+for (const ap of aliasPoetRows) {
+  const targetKey = `${ap.mergedInto.author}|${ap.mergedInto.dynasty}`;
+  if (!realPoetKeys.has(targetKey)) err(`poets.jsonl 别名行 mergedInto 目标不存在: ${ap.name}|${ap.dynasty} → ${targetKey}`);
+  if (aliasKeySet.has(targetKey)) err(`poets.jsonl 别名行 mergedInto 指向另一个别名(禁链式): ${ap.name}|${ap.dynasty} → ${targetKey}`);
+  if (ap.poemCount !== 0) err(`poets.jsonl 别名行 poemCount 应恒为 0: ${ap.name}|${ap.dynasty} poemCount=${ap.poemCount}`);
+}
 
 // ── 生成 REPORT.md ──────────────────────────────────────────────────────────
 const pass = errors.length === 0;
@@ -202,29 +272,44 @@ ${(br?.curated?.corrections || []).map((c) => { const restricted = /in-copyright
 | # | 校验项 | 结果 |
 |---|---|---|
 | 1 | schema 完整(必填字段齐、类型对) | ${errors.some((e) => /id|title|author|body|dynasty_raw|dup_group/.test(e)) ? "❌" : "✅"} |
-| 2 | dynasty ∈ 15 canonical key | ${errors.some((e) => /canonical/.test(e)) ? "❌" : "✅"} |
+| 2 | dynasty ∈ 15 canonical key | ${errors.some((e) => /dynasty 非 canonical/.test(e)) ? "❌" : "✅"} |
 | 3 | 编码:无致命乱码(占位符仅报告) | ✅ (占位符 ${stat.placeholder.toLocaleString()},见 §6) |
 | 4 | 去重报告(dup_group,不自动删) | ✅ (见 §5) |
 | 5 | provenance 齐全(type/source;curated 有 note;订正有 corrected_from) | ${errors.some((e) => /provenance|curated|订正/.test(e)) ? "❌" : "✅"} |
 | 6 | 许可:公开层=PD,隔离层有 license | ${stat.publicNonPD || stat.restrictedNoLicense ? "❌" : "✅"} |
 | 7 | corrections 命中数与声明一致(expectHits,缺省 1=唯一命中) | ${errors.some((e) => /correction/.test(e)) ? "❌" : "✅"} |
+| 8 | canonical 层一致(别名不链式、merges 目标真实存在且非别名) | ${errors.some((e) => /canonical_id|merges|mergedInto/.test(e)) ? "❌" : "✅"} |
 
 ${errors.length ? `### 致命错误(前 ${Math.min(errors.length, 60)} 条)\n\n${errors.map((e) => `- ${e}`).join("\n")}` : ""}
 ${warnings.length ? `\n### 警告\n\n${warnings.map((w) => `- ${w}`).join("\n")}` : ""}
 
-## 9. 输出文件清单
+## 9. canonical 别名层(merges + 诗级标注)
+
+- merges(诗人身份合并,别名 poemCount 恒 0,数据层不删只改挂正身):
+
+| 别名 (author\\|dynasty) | 正身 (author\\|dynasty) | 诗行数(applied) |
+|---|---|---:|
+${(br?.curated?.merges || []).map((m) => `| ${m.alias_author}\\|${m.alias_dynasty} | ${m.canonical_author}\\|${m.canonical_dynasty} | ${m.applied} |`).join("\n") || "| (无) | | |"}
+
+- 诗级 canonical 标注:
+  - a) 精确重复(同 dup_group,含 merges 带来的新重复):**${exactDupLines.toLocaleString()}** 行标 \`canonical:false\`
+  - b) 组诗总题合并行(标题拼接=分首拼接):**${totalTitleLines.toLocaleString()}** 行标 \`canonical:false\`
+  - per-作者 top10(精确重复):${[...perAuthorExact.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([a, n]) => `${a}(${n})`).join(" · ") || "(无)"}
+  - per-作者 top10(组诗总题):${[...perAuthorTotal.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([a, n]) => `${a}(${n})`).join(" · ") || "(无)"}
+- 缺省 \`canonical\`=true(不写字段),老消费者零感知。
+
+## 10. 输出文件清单
 
 | 文件 | 大小 |
 |---|---:|
 ${(br?.files || []).map((f) => `| \`data/${f.file}\` | ${fmtBytes(f.bytes)} |`).join("\n") || "- (build report 缺失)"}
 
-## 10. 存疑 / 交 owner 决定(铁律:不在数据里改姓名/朝代/合并,只在此报告)
+## 11. 存疑 / 交 owner 决定(铁律:不在数据里改姓名/朝代/合并,只在此报告)
 
 - **隔离层 \`⚠in-copyright(verify)\`(${(stat.perLicense["⚠in-copyright(verify)"] || 0).toLocaleString()} 条)**:来自 Werneror 近现代/当代桶,无法逐条确证 life+50。
   其中**多数民国早期作者实为 PD**(如王国维 d.1927、章太炎 d.1936、梁启超 d.1929、苏曼殊 d.1918)。
   建议:做一份"已确证死亡年"的诗人白名单,把确证 PD 者从隔离层提升到公开层。
-- **毛泽东《到韶山》跨源重出**:Werneror 骨干本已订正(jinxiandai,type=curated,正文在隔离层);yuxqiu modern times 另有一份(dangdai,保真不动)。
-  两份 \`dynasty\` 不一致(同一作者跨源分桶差异)——**按铁律不归并**,交 owner 决定是否统一朝代/去重。
+- **毛泽东《到韶山》/89 首跨源重出**:Werneror 近现代.csv(jinxiandai,89首,已订正)与 yuxqiu modern times(dangdai,89首转录副本)——**已按 curated/merges.jsonl 归并**(正身=jinxiandai),dangdai 桶诗行改挂正身、诗人身份降级为 poemCount:0 的别名行,数据层仍保留原始行不删。
 - **曲(散曲)仅 ${(stat.perGenre["qu"] || 0)} 条**:Werneror **不系统标注宫调**,故 genre=qu 命中极少(与诗云体检"曲≈0"一致)。
   若需补全散曲,建议新增父库《全元散曲》并入构建(本库已用 curated 补录兰楚芳一首示范)。
 - **兰楚芳**:本库归 \`yuan\`(《全元散曲》收为元);亦有作"元末明初(ming)"之说,存疑交 owner。
@@ -237,5 +322,6 @@ writeFileSync(join(ROOT, "REPORT.md"), md);
 console.log(`\nREPORT.md 已生成。`);
 console.log(`总记录=${stat.total}  public=${stat.perLayer.public}  restricted=${stat.perLayer.restricted}`);
 console.log(`去重组(≥2)=${dupGroups}  占位符记录=${stat.placeholder}  id抽检=${sampleChecked}/坏${sampleBadId}`);
+console.log(`canonical: 精确重复=${exactDupLines}  组诗总题=${totalTitleLines}  merges=${mergesDecl.length}(applied: ${(br?.curated?.merges || []).map((m) => m.applied).join("/")})`);
 if (pass) { console.log("✅ VALIDATE PASS"); }
 else { console.error(`❌ VALIDATE FAIL — ${errors.length} 项致命错误:`); for (const e of errors.slice(0, 15)) console.error("  - " + e); process.exit(1); }

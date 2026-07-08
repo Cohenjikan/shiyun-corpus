@@ -75,15 +75,15 @@
 | 魏晋 | weijin | 3,021 | 0.31% |
 | 南北朝 | nanbeichao | 4,586 | 0.47% |
 | 隋 | sui | 1,170 | 0.12% |
-| 唐 | tang | 50,785 | 5.23% |
+| 唐 | tang | 50,784 | 5.23% |
 | 宋 | song | 299,406 | 30.86% |
 | 辽 | liao | 22 | 0.00% |
 | 金 | jin | 5,760 | 0.59% |
-| 元 | yuan | 37,376 | 3.85% |
-| 明 | ming | 252,695 | 26.04% |
+| 元 | yuan | 37,378 | 3.85% |
+| 明 | ming | 252,694 | 26.04% |
 | 清 | qing | 107,790 | 11.11% |
-| 近现代 | jinxiandai | 59,088 | 6.09% |
-| 当代 | dangdai | 147,691 | 15.22% |
+| 近现代 | jinxiandai | 59,177 | 6.10% |
+| 当代 | dangdai | 147,602 | 15.21% |
 
 ## 3. 按体裁 (genre)
 
@@ -111,10 +111,10 @@ provenance.type:upstream=970,315 · curated=10
 
 > 仅作报告,交消费者决定是否去重(诗云正因刻意不去重而有陆游虚高)。
 
-- 去重组数(size≥2):**34,250**,涉及记录 **68,514**(7.06%)
+- 去重组数(size≥2):**34,251**,涉及记录 **68,516**(7.06%)
 - 组规模分布:
-  - size 2: 34,243 组
-  - size 1(unique): 901,811 组
+  - size 2: 34,244 组
+  - size 1(unique): 901,809 组
   - size 3-5: 6 组
   - size 6-10: 1 组
   - size 11-50: 0 组
@@ -167,44 +167,61 @@ provenance.type:upstream=970,315 · curated=10
 | 5 | provenance 齐全(type/source;curated 有 note;订正有 corrected_from) | ✅ |
 | 6 | 许可:公开层=PD,隔离层有 license | ✅ |
 | 7 | corrections 命中数与声明一致(expectHits,缺省 1=唯一命中) | ✅ |
+| 8 | canonical 层一致(别名不链式、merges 目标真实存在且非别名) | ✅ |
 
 
 
 
-## 9. 输出文件清单
+## 9. canonical 别名层(merges + 诗级标注)
+
+- merges(诗人身份合并,别名 poemCount 恒 0,数据层不删只改挂正身):
+
+| 别名 (author\|dynasty) | 正身 (author\|dynasty) | 诗行数(applied) |
+|---|---|---:|
+| 唐温如\|tang | 唐珙\|yuan | 1 |
+| 唐珙\|ming | 唐珙\|yuan | 1 |
+| 毛泽东\|dangdai | 毛泽东\|jinxiandai | 89 |
+
+- 诗级 canonical 标注:
+  - a) 精确重复(同 dup_group,含 merges 带来的新重复):**34,264** 行标 `canonical:false`
+  - b) 组诗总题合并行(标题拼接=分首拼接):**64,788** 行标 `canonical:false`
+  - per-作者 top10(精确重复):黄浚(1279) · 连横(990) · 赵尊岳(657) · 龙榆生(608) · 顾随(516) · 黄侃(495) · 李洸(466) · 沙曾达(417) · 施蛰存(401) · 寇梦碧(384)
+  - per-作者 top10(组诗总题):屈大均(1019) · 陆游(953) · 王世贞(825) · 杨万里(721) · 刘克庄(700) · 赵蕃(639) · 胡应麟(522) · 陈造(389) · 方回(364) · 卢青山(345)
+- 缺省 `canonical`=true(不写字段),老消费者零感知。
+
+## 10. 输出文件清单
 
 | 文件 | 大小 |
 |---|---:|
 | `data/_restricted/poems.dangdai.2.jsonl` | 45.0 MB |
 | `data/_restricted/poems.dangdai.3.jsonl` | 25.2 MB |
-| `data/_restricted/poems.dangdai.jsonl` | 45.0 MB |
-| `data/_restricted/poems.jinxiandai.jsonl` | 34.2 MB |
+| `data/_restricted/poems.dangdai.jsonl` | 45.4 MB |
+| `data/_restricted/poems.jinxiandai.jsonl` | 35.8 MB |
 | `data/poems.jin.jsonl` | 2.8 MB |
 | `data/poems.liao.jsonl` | 0.0 MB |
 | `data/poems.ming.2.jsonl` | 45.0 MB |
-| `data/poems.ming.3.jsonl` | 33.1 MB |
-| `data/poems.ming.jsonl` | 45.0 MB |
+| `data/poems.ming.3.jsonl` | 34.6 MB |
+| `data/poems.ming.jsonl` | 45.1 MB |
 | `data/poems.nanbeichao.jsonl` | 2.3 MB |
-| `data/poems.qing.2.jsonl` | 11.4 MB |
-| `data/poems.qing.jsonl` | 45.0 MB |
+| `data/poems.qing.2.jsonl` | 11.8 MB |
+| `data/poems.qing.jsonl` | 45.1 MB |
 | `data/poems.qinhan.jsonl` | 0.2 MB |
 | `data/poems.song.2.jsonl` | 45.0 MB |
-| `data/poems.song.3.jsonl` | 45.0 MB |
-| `data/poems.song.4.jsonl` | 7.2 MB |
+| `data/poems.song.3.jsonl` | 46.7 MB |
+| `data/poems.song.4.jsonl` | 7.3 MB |
 | `data/poems.song.jsonl` | 45.0 MB |
 | `data/poems.sui.jsonl` | 0.5 MB |
-| `data/poems.tang.jsonl` | 23.1 MB |
+| `data/poems.tang.jsonl` | 23.3 MB |
 | `data/poems.weijin.jsonl` | 1.5 MB |
 | `data/poems.xianqin.jsonl` | 0.4 MB |
-| `data/poems.yuan.jsonl` | 18.1 MB |
+| `data/poems.yuan.jsonl` | 18.3 MB |
 
-## 10. 存疑 / 交 owner 决定(铁律:不在数据里改姓名/朝代/合并,只在此报告)
+## 11. 存疑 / 交 owner 决定(铁律:不在数据里改姓名/朝代/合并,只在此报告)
 
 - **隔离层 `⚠in-copyright(verify)`(89,842 条)**:来自 Werneror 近现代/当代桶,无法逐条确证 life+50。
   其中**多数民国早期作者实为 PD**(如王国维 d.1927、章太炎 d.1936、梁启超 d.1929、苏曼殊 d.1918)。
   建议:做一份"已确证死亡年"的诗人白名单,把确证 PD 者从隔离层提升到公开层。
-- **毛泽东《到韶山》跨源重出**:Werneror 骨干本已订正(jinxiandai,type=curated,正文在隔离层);yuxqiu modern times 另有一份(dangdai,保真不动)。
-  两份 `dynasty` 不一致(同一作者跨源分桶差异)——**按铁律不归并**,交 owner 决定是否统一朝代/去重。
+- **毛泽东《到韶山》/89 首跨源重出**:Werneror 近现代.csv(jinxiandai,89首,已订正)与 yuxqiu modern times(dangdai,89首转录副本)——**已按 curated/merges.jsonl 归并**(正身=jinxiandai),dangdai 桶诗行改挂正身、诗人身份降级为 poemCount:0 的别名行,数据层仍保留原始行不删。
 - **曲(散曲)仅 374 条**:Werneror **不系统标注宫调**,故 genre=qu 命中极少(与诗云体检"曲≈0"一致)。
   若需补全散曲,建议新增父库《全元散曲》并入构建(本库已用 curated 补录兰楚芳一首示范)。
 - **兰楚芳**:本库归 `yuan`(《全元散曲》收为元);亦有作"元末明初(ming)"之说,存疑交 owner。

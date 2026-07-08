@@ -8048,6 +8048,7 @@
 {"id":"0c6ef92e","name":"盛景年","dynasty":"yuan","poemCount":4,"genres":["shi"],"has_curated":false}
 {"id":"b7d81279","name":"徐天倪","dynasty":"yuan","poemCount":4,"genres":["shi"],"has_curated":false}
 {"id":"df0e3b5d","name":"万石德躬","dynasty":"yuan","poemCount":4,"genres":["shi"],"has_curated":false}
+{"id":"28a217e3","name":"唐珙","dynasty":"yuan","poemCount":4,"genres":["shi"],"has_curated":true}
 {"id":"84698082","name":"梁栋","dynasty":"yuan","poemCount":4,"genres":["shi"],"has_curated":false}
 {"id":"91de3033","name":"王立中","dynasty":"ming","poemCount":4,"genres":["ci","shi"],"has_curated":false}
 {"id":"230841af","name":"顾晋","dynasty":"ming","poemCount":4,"genres":["shi"],"has_curated":false}
@@ -12081,7 +12082,6 @@
 {"id":"8aced0b2","name":"邓或之","dynasty":"yuan","poemCount":2,"genres":["shi"],"has_curated":false}
 {"id":"20c4372b","name":"李仲南","dynasty":"yuan","poemCount":2,"genres":["shi"],"has_curated":false}
 {"id":"2bbdd808","name":"仇仁远","dynasty":"yuan","poemCount":2,"genres":["shi"],"has_curated":false}
-{"id":"28a217e3","name":"唐珙","dynasty":"yuan","poemCount":2,"genres":["shi"],"has_curated":true}
 {"id":"5ba5a4d4","name":"徐秋云","dynasty":"yuan","poemCount":2,"genres":["shi"],"has_curated":false}
 {"id":"3b6c6e76","name":"达德越士","dynasty":"yuan","poemCount":2,"genres":["shi"],"has_curated":false}
 {"id":"91e10d4e","name":"张九思","dynasty":"yuan","poemCount":2,"genres":["shi"],"has_curated":false}
@@ -17717,7 +17717,6 @@
 {"id":"affb1347","name":"唐远悊","dynasty":"tang","poemCount":1,"genres":["shi"],"has_curated":false}
 {"id":"00c04421","name":"唐枢","dynasty":"tang","poemCount":1,"genres":["shi"],"has_curated":false}
 {"id":"5786749e","name":"唐思言","dynasty":"tang","poemCount":1,"genres":["shi"],"has_curated":false}
-{"id":"4a282690","name":"唐温如","dynasty":"tang","poemCount":1,"genres":["shi"],"has_curated":false}
 {"id":"fe5e5ef9","name":"唐廪","dynasty":"tang","poemCount":1,"genres":["shi"],"has_curated":false}
 {"id":"cd9a4ee7","name":"夏方庆","dynasty":"tang","poemCount":1,"genres":["shi"],"has_curated":false}
 {"id":"4efc6a4b","name":"夏宝松","dynasty":"tang","poemCount":1,"genres":["shi"],"has_curated":false}
@@ -23400,7 +23399,6 @@
 {"id":"3f0863d4","name":"章溢","dynasty":"ming","poemCount":1,"genres":["shi"],"has_curated":false}
 {"id":"632a9ddb","name":"鲁渊","dynasty":"ming","poemCount":1,"genres":["shi"],"has_curated":false}
 {"id":"1fa8d475","name":"刘睿","dynasty":"ming","poemCount":1,"genres":["shi"],"has_curated":false}
-{"id":"1c8a158b","name":"唐珙","dynasty":"ming","poemCount":1,"genres":["shi"],"has_curated":false}
 {"id":"9e04fdbd","name":"刘堧","dynasty":"ming","poemCount":1,"genres":["shi"],"has_curated":false}
 {"id":"4f693710","name":"俞庸","dynasty":"ming","poemCount":1,"genres":["shi"],"has_curated":false}
 {"id":"8eb77d2b","name":"李尧","dynasty":"ming","poemCount":1,"genres":["shi"],"has_curated":false}
@@ -28154,3 +28152,5 @@
 {"id":"5ee05ada","name":"李皓","dynasty":"weijin","poemCount":1,"genres":["shi"],"has_curated":false}
 {"id":"556f9fc3","name":"苏蕙","dynasty":"weijin","poemCount":1,"genres":["shi"],"has_curated":false}
 {"id":"52b28b25","name":"兰楚芳","dynasty":"yuan","poemCount":1,"genres":["qu"],"has_curated":true}
+{"id":"4a282690","name":"唐温如","dynasty":"tang","poemCount":0,"mergedInto":{"author":"唐珙","dynasty":"yuan"},"note":"唐珙字温如,元末明初人,《全元诗》收录通例系元;『唐温如』为以字行世+上游误系唐代。"}
+{"id":"1c8a158b","name":"唐珙","dynasty":"ming","poemCount":0,"mergedInto":{"author":"唐珙","dynasty":"yuan"},"note":"上游『明』桶为误系,唐珙实元末明初人,《全元诗》收录通例系元。"}

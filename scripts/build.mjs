@@ -34,6 +34,33 @@ const simplify = (s) => (s || "").replace(/[證闢車鳥風頁魚烏島龜靈晝
 function fnv32(s) { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return h >>> 0; }
 const poetId = (name, dyn) => fnv32(name + "|" + dyn).toString(16).padStart(8, "0");
 
+// ── 中文数字 → 整数(仅支持 一~九十九/百 组合的规范写法;解析不出返回 null → 调用方按保守规则跳过) ──
+const CN_DIGIT = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9 };
+function cnToInt(raw) {
+  const s = raw.replace(/^其|^之/, "");
+  if (!s) return null;
+  if (s.length === 1) return CN_DIGIT[s] ?? (s === "十" ? 10 : null);
+  // 二位:十N / N十 / 廿N；三位:N十N / 一百N
+  if (s.length === 2) {
+    if (s[0] === "十") return CN_DIGIT[s[1]] != null ? 10 + CN_DIGIT[s[1]] : null;
+    if (s[1] === "十") return CN_DIGIT[s[0]] != null ? CN_DIGIT[s[0]] * 10 : null;
+    if (s[0] === "廿") return CN_DIGIT[s[1]] != null ? 20 + CN_DIGIT[s[1]] : (s[1] === undefined ? 20 : null);
+    return null;
+  }
+  if (s.length === 3 && s[1] === "十") return (CN_DIGIT[s[0]] != null && CN_DIGIT[s[2]] != null) ? CN_DIGIT[s[0]] * 10 + CN_DIGIT[s[2]] : null;
+  if (s.length === 3 && s.slice(0, 2) === "一百") return CN_DIGIT[s[2]] != null ? 100 + CN_DIGIT[s[2]] : null;
+  return null; // 其余写法(数位连写如"一一一"等)保守跳过,不参与总题拼接判定
+}
+// 组诗成员标题:"<base> 其N" / "<base> N"(空白分隔) / "<base> 之N"。返回 {base, n} 或 null(n 解析不出也算 null,调用方跳过)。
+const MEMBER_RE = /^(.*?)[\s　]+(其[一二三四五六七八九十百廿]+|[一二三四五六七八九十百廿]+|之[一二三四五六七八九十百廿]+)$/;
+function splitMember(title) {
+  const m = MEMBER_RE.exec(title);
+  if (!m) return null;
+  const n = cnToInt(m[2]);
+  if (n == null) return null;
+  return { base: m[1], n };
+}
+
 // raw 朝代 → canonical key(沿用诗云 src/data/dynasties.ts 的 15 键映射)
 const DYN = {
   先秦: "xianqin",
@@ -119,12 +146,29 @@ function sourceKey(src) {
   return src.split("/")[0];
 }
 const poets = new Map(); // poetId -> {id,name,dynasty,layer,count,genres:Set,hasCurated}
+const aliasPoets = new Map(); // aliasPoetId -> {id,name,dynasty,layer,mergedInto:{author,dynasty},note} — poemCount 恒 0,仅为保住 #a= 深链而发行
 function record({ title, author, dynRaw, dyn, body, genre, layer, prov }) {
   body = simplify((body || "").replace(/^\s+|\s+$/g, ""));
   author = simplify((author || "").trim());
   title = simplify((title || "").trim());
   if (!author || !body) return false;
   if (!CANON_KEYS.has(dyn)) stat.badDynasty++;
+  // merges:命中别名(author,dyn)→ 诗行改挂正身;provenance 存证原署名(merged_from);别名诗人身份单独记一行(poemCount:0)
+  const merge = resolveMerge(author, dyn);
+  if (merge) {
+    const aliasPid = poetId(author, dyn);
+    if (!aliasPoets.has(aliasPid)) {
+      aliasPoets.set(aliasPid, {
+        id: aliasPid, name: author, dynasty: dyn, layer,
+        mergedInto: { author: merge.author, dynasty: merge.dynasty },
+        note: merge.note,
+      });
+    } else if (layer === "public") {
+      aliasPoets.get(aliasPid).layer = "public"; // 别名身份跨层出现时同 poet 归并规则:public 优先展示
+    }
+    prov = { ...prov, merged_from: { author, dynasty: dyn } };
+    author = merge.author; dyn = merge.dynasty;
+  }
   const rec = {
     id: id16(author, dyn, title, body),
     title, author, dynasty: dyn, dynasty_raw: dynRaw,
@@ -140,7 +184,7 @@ function record({ title, author, dynRaw, dyn, body, genre, layer, prov }) {
   stat.perLicense[prov.license] = (stat.perLicense[prov.license] || 0) + 1;
   stat.perLayer[layer]++;
   if (PLACEHOLDER.test(body)) stat.placeholderRecords++;
-  // poet aggregate
+  // poet aggregate(正身;别名已在上面 resolveMerge 分支单独记账,不进这里)
   const pid = poetId(author, dyn);
   let p = poets.get(pid);
   if (!p) { p = { id: pid, name: author, dynasty: dyn, layer, count: 0, genres: new Set(), hasCurated: false }; poets.set(pid, p); }
@@ -182,6 +226,20 @@ const additions = [...loadJsonl(join(CURATED, "additions.jsonl")), ...loadJsonl(
 const corrByFirst = new Map(); // matchFirstLine -> {...correction, applied}
 for (const c of corrections) { c.applied = 0; corrByFirst.set(c.matchFirstLine, c); }
 const firstLine = (body) => body.split(/[，。！？；\n]/)[0];
+
+// ── merges(别名正身层):curated/merges.jsonl,{alias_author,alias_dynasty,canonical_author,canonical_dynasty,note}
+// Wikidata 模式:数据层不删——诗行改挂正身 author/dynasty(provenance 存证 merged_from),
+// poets.jsonl 为别名身份仍发一行(poemCount:0, merged_into),保住原 poetId(name|dynasty)不断 #a= 深链。
+const merges = loadJsonl(join(CURATED, "merges.jsonl"));
+const mergeByAlias = new Map(); // "author|dynasty" -> {canonical_author,canonical_dynasty,note}
+for (const m of merges) { m.applied = 0; mergeByAlias.set(`${m.alias_author}|${m.alias_dynasty}`, m); }
+// resolveMerge:命中别名 → 返回正身 {author,dynasty};未命中 → null。别名键用 build.mjs 内 simplify/trim 后的 author 比对(与 record() 一致)。
+function resolveMerge(author, dyn) {
+  const m = mergeByAlias.get(`${author}|${dyn}`);
+  if (!m) return null;
+  m.applied++;
+  return { author: m.canonical_author, dynasty: m.canonical_dynasty, note: m.note };
+}
 
 // 套用 correction:命中则改正、转 provenance=curated、留 corrected_from。返回处理后字段或 null。
 function applyCorrection(author, body) {
@@ -318,14 +376,107 @@ console.log("\n[curated] additions …");
   console.log(`  additions: +${stat.total - n0}`);
 }
 
-// ── 收尾:关闭分片、写 poets、写 build report ─────────────────────────────
+// ── 收尾:关闭分片 ─────────────────────────────────────────────────────────
 for (const w of writers.values()) w.close();
+
+// ── canonical 标注(merges 之后跑,两类;分组遍历,不做 O(n²) 全库比对) ──────
+// a) 精确重复:同 dup_group(同作者同文)组内保留一条 canonical(优先 provenance.type=curated,否则首条原序),其余标 canonical:false + canonical_id。
+// b) 组诗总题合并行:同作者下,标题 T 的行 body 去空白后 == members("T 其N"/"T N"/"T 之N",按数字排序)按序拼接 → T 行标 canonical:false + canonical_note(拼接不精确相等则不标,无单一 canonical_id,留 null)。
+// 缺省 canonical=true(不写字段=true,老消费者零感知)。
+console.log("\n[canonical] 别名/组诗标注 …");
+const canonStat = { exactDupLines: 0, totalTitleLines: 0, perAuthorExact: new Map(), perAuthorTotal: new Map() };
+{
+  // 1) 重新读回所有已写分片(含刚 merge 改挂正身的行),按文件持有可变数组,再按 author 建索引(引用同一对象,原地标注后按文件整体重写)
+  const fileRows = new Map(); // fileAbsPath -> Array<rec>
+  const byAuthor = new Map(); // author -> Array<rec>  (rec 与 fileRows 中的对象同引用)
+  for (const dir of [OUT, OUT_RESTRICTED]) {
+    if (!existsSync(dir)) continue;
+    for (const f of readdirSync(dir)) {
+      if (!f.startsWith("poems.") || !f.endsWith(".jsonl")) continue;
+      const abs = join(dir, f);
+      const lines = readFileSync(abs, "utf8").split("\n");
+      const rows = [];
+      for (const l of lines) { if (!l) continue; rows.push(JSON.parse(l)); }
+      fileRows.set(abs, rows);
+      for (const rec of rows) {
+        let arr = byAuthor.get(rec.author);
+        if (!arr) { arr = []; byAuthor.set(rec.author, arr); }
+        arr.push(rec);
+      }
+    }
+  }
+
+  for (const [author, recs] of byAuthor) {
+    // b) 组诗总题合并行——先算候选集(仅算,不落字段),供 a) 选 canonical 时避让,防止 a) 选中的 canonical 行
+    //    随后又被 b) 判定为总题合并行,导致"canonical_id 指向的行必须 canonical"被打破(别名链式)。
+    const byTitle = new Map();
+    for (const r of recs) { let a = byTitle.get(r.title); if (!a) { a = []; byTitle.set(r.title, a); } a.push(r); }
+    const membersByBase = new Map(); // base -> [{n, body}]
+    for (const r of recs) {
+      const sp = splitMember(r.title);
+      if (!sp) continue;
+      let a = membersByBase.get(sp.base); if (!a) { a = []; membersByBase.set(sp.base, a); }
+      a.push({ n: sp.n, body: r.body.replace(/\s+/g, "") });
+    }
+    const totalTitleCandidates = new Set(); // Set<rec> —— b) 将会标注的行(在 a) 选 canonical 时避让)
+    for (const [base, members] of membersByBase) {
+      const totalRows = byTitle.get(base);
+      if (!totalRows || members.length < 2) continue;
+      const sorted = [...members].sort((x, y) => x.n - y.n);
+      const concat = sorted.map((m) => m.body).join("");
+      for (const t of totalRows) {
+        if (t.body.replace(/\s+/g, "") === concat) totalTitleCandidates.add(t);
+      }
+    }
+
+    // a) 精确重复(dup_group 分组;dup_group = sha1(author|body无空白),同作者内天然聚组,无需跨作者比较)
+    // canonical 优先级:非总题候选 + curated > 非总题候选(首条原序)。
+    // 若组内全员都是总题候选(极端情况,如同一诗人对同一组诗有两个总题各自匹配自身分首)——
+    // 则没有安全的 canonical_id 落点,跳过 a) 的跨行链接,交给 b) 各自独立标注 canonical_note(不产生 canonical_id 链)。
+    const byDup = new Map();
+    for (const r of recs) { let a = byDup.get(r.dup_group); if (!a) { a = []; byDup.set(r.dup_group, a); } a.push(r); }
+    for (const group of byDup.values()) {
+      if (group.length < 2) continue;
+      const canon = group.find((r) => r.provenance?.type === "curated" && !totalTitleCandidates.has(r))
+        || group.find((r) => !totalTitleCandidates.has(r));
+      if (!canon) continue; // 全员总题候选,跳过(保守:不造 canonical_id 链)
+      let demoted = 0;
+      for (const r of group) {
+        if (r === canon) continue;
+        r.canonical = false; r.canonical_id = canon.id;
+        demoted++;
+      }
+      canonStat.exactDupLines += demoted;
+      canonStat.perAuthorExact.set(author, (canonStat.perAuthorExact.get(author) || 0) + demoted);
+    }
+    // b) 正式标注(仅在仍为 canonical 的行上标注,不覆盖 a) 已判定的行;canon 行已在上面避让,这里理应不再命中,兜底仍加保护)
+    for (const t of totalTitleCandidates) {
+      if (t.canonical === false) continue; // 已被 a) 判定(理论上不会,因 a) 已避让;兜底不覆盖)
+      t.canonical = false; t.canonical_note = "组诗总题合并行,分首为正身";
+      canonStat.totalTitleLines++;
+      canonStat.perAuthorTotal.set(author, (canonStat.perAuthorTotal.get(author) || 0) + 1);
+    }
+  }
+
+  // 2) 按文件整体重写(仅改过的字段体现在 JSON.stringify 里;未标注行原样输出)
+  for (const [abs, rows] of fileRows) {
+    writeFileSync(abs, rows.map((r) => JSON.stringify(r)).join("\n") + (rows.length ? "\n" : ""));
+  }
+}
+const top10 = (m) => [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([author, n]) => ({ author, n }));
+console.log(`  精确重复标注: ${canonStat.exactDupLines} 行`);
+console.log(`  组诗总题标注: ${canonStat.totalTitleLines} 行`);
 
 // poets.jsonl(公开层) + poets.restricted.jsonl(隔离层)
 const poetRowsPublic = [], poetRowsRestricted = [];
 for (const p of [...poets.values()].sort((a, b) => b.count - a.count)) {
   const row = { id: p.id, name: p.name, dynasty: p.dynasty, poemCount: p.count, genres: [...p.genres].sort(), has_curated: p.hasCurated };
   (p.layer === "restricted" ? poetRowsRestricted : poetRowsPublic).push(row);
+}
+// 别名身份行(merges 命中的原署名):poemCount 恒 0,merged_into 指向正身——保住原 poetId(name|dynasty),#a= 深链不断
+for (const ap of aliasPoets.values()) {
+  const row = { id: ap.id, name: ap.name, dynasty: ap.dynasty, poemCount: 0, mergedInto: ap.mergedInto, note: ap.note };
+  (ap.layer === "restricted" ? poetRowsRestricted : poetRowsPublic).push(row);
 }
 writeFileSync(join(OUT, "poets.jsonl"), poetRowsPublic.map((r) => JSON.stringify(r)).join("\n") + "\n");
 writeFileSync(join(OUT_RESTRICTED, "poets.jsonl"), poetRowsRestricted.map((r) => JSON.stringify(r)).join("\n") + "\n");
@@ -352,6 +503,13 @@ const buildReport = {
   curated: {
     additions: additions.length,
     corrections: corrections.map((c) => ({ matchFirstLine: c.matchFirstLine, find: c.find, replace: c.replace, applied: c.applied || 0, findMiss: c.findMiss || 0, expectHits: c.expectHits ?? 1, license: c.license })), // expectHits:声明合法命中数,缺省 1(validate 铁律据此核对)
+    merges: merges.map((m) => ({ alias_author: m.alias_author, alias_dynasty: m.alias_dynasty, canonical_author: m.canonical_author, canonical_dynasty: m.canonical_dynasty, applied: m.applied || 0 })),
+  },
+  canonical: {
+    exactDupLines: canonStat.exactDupLines,
+    totalTitleLines: canonStat.totalTitleLines,
+    perAuthorExactTop10: top10(canonStat.perAuthorExact),
+    perAuthorTotalTop10: top10(canonStat.perAuthorTotal),
   },
   shardCapMB: SHARD_CAP / 1024 / 1024,
   files: fileList.sort((a, b) => a.file.localeCompare(b.file)),
@@ -362,5 +520,7 @@ console.log(`\nDONE  total=${stat.total}  public=${stat.perLayer.public}  restri
 console.log(`poets: public=${poetRowsPublic.length} restricted=${poetRowsRestricted.length}`);
 console.log(`genres:`, stat.perGenre);
 console.log(`corrections applied:`, buildReport.curated.corrections);
+console.log(`merges applied:`, buildReport.curated.merges);
+console.log(`canonical: exactDupLines=${canonStat.exactDupLines} totalTitleLines=${canonStat.totalTitleLines}`);
 if (stat.badDynasty) console.warn(`⚠ 未知朝代键记录数: ${stat.badDynasty}`);
 console.log(`\n→ data/_build_report.json 写出。下一步: node scripts/validate.mjs`);
