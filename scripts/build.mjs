@@ -147,7 +147,10 @@ function sourceKey(src) {
 }
 const poets = new Map(); // poetId -> {id,name,dynasty,layer,count,genres:Set,hasCurated}
 const aliasPoets = new Map(); // aliasPoetId -> {id,name,dynasty,layer,mergedInto:{author,dynasty},note} — poemCount 恒 0,仅为保住 #a= 深链而发行
-function record({ title, author, dynRaw, dyn, body, genre, layer, prov }) {
+// collection(可选):收录状态标注 {status:"disputed"|"index-only", note:"<短句>"}。仅 additions 路径显式传入
+// (上游/corrections 不带),所以缺省时 rec 保持原 10 键不变。⚠ 绝不参与 id16/dup_group 哈希(见文件头两常量)—
+// 收录状态是元数据,不改变诗的身份,否则同一首诗因加/删标注会换 id、断 #a= 深链。
+function record({ title, author, dynRaw, dyn, body, genre, layer, prov, collection }) {
   body = simplify((body || "").replace(/^\s+|\s+$/g, ""));
   author = simplify((author || "").trim());
   title = simplify((title || "").trim());
@@ -175,6 +178,7 @@ function record({ title, author, dynRaw, dyn, body, genre, layer, prov }) {
     body, genre, dup_group: dupGroup(author, body),
     provenance: prov, __layer: layer,
   };
+  if (collection) rec.collection = collection; // 仅在 additions 显式带 collection 时挂上(否则 rec 保持 10 键)
   // stats
   stat.total++;
   stat.perDynasty[dyn] = (stat.perDynasty[dyn] || 0) + 1;
@@ -371,7 +375,7 @@ console.log("\n[curated] additions …");
   for (const a of additions) {
     const dyn = a.dynasty;
     const layer = a.layer || (a.license === "PD" ? "public" : "restricted");
-    record({ title: a.title || "", author: a.author, dynRaw: a.dynasty_raw || "", dyn, body: a.body, genre: a.genre || deriveGenre(a.title || "", { freeVerse: a.freeVerse || false }), layer, prov: { type: "curated", source: a.source, license: a.license, note: a.note || "", corrected_from: null } });
+    record({ title: a.title || "", author: a.author, dynRaw: a.dynasty_raw || "", dyn, body: a.body, genre: a.genre || deriveGenre(a.title || "", { freeVerse: a.freeVerse || false }), layer, prov: { type: "curated", source: a.source, license: a.license, note: a.note || "", corrected_from: null }, collection: a.collection });
   }
   console.log(`  additions: +${stat.total - n0}`);
 }

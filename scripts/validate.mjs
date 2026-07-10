@@ -91,6 +91,19 @@ for (const { file, abs } of files) {
       if (layer === "restricted" && !p.license) stat.restrictedNoLicense++;
       if (layer === "public" && p.license !== "PD") { stat.publicNonPD++; err(`${file}:${ln} 公开层非 PD 许可: ${p.license}(应隔离)`); }
     }
+    // 8) collection 收录状态标注(可选;存在即校验):status 白名单 / note 必填非空 /
+    //    index-only(仅存目)行必须来自 in-copyright 许可(收录=复制发行,不适用引用合理使用)。
+    if (r.collection !== undefined) {
+      const col = r.collection;
+      if (!col || typeof col !== "object") err(`${file}:${ln} collection 非对象: ${JSON.stringify(col)}`);
+      else {
+        if (col.status !== "disputed" && col.status !== "index-only") err(`${file}:${ln} collection.status 非法(应 disputed|index-only): ${col.status}`);
+        if (typeof col.note !== "string" || !col.note) err(`${file}:${ln} collection.note 必填非空 string`);
+        if (col.status === "index-only" && !(r.provenance?.license || "").startsWith("⚠in-copyright")) {
+          err(`${file}:${ln} index-only 行 license 必须以 ⚠in-copyright 开头: ${r.provenance?.license}`);
+        }
+      }
+    }
     // 3) 编码占位符(报告,不致命)
     if (PLACEHOLDER.test(r.body)) stat.placeholder++;
     // 4) 去重计数
