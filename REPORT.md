@@ -28,7 +28,7 @@
 - `Werneror/明_1.csv` — 59,478
 - `Werneror/明_2.csv` — 59,000
 - `Werneror/明_4.csv` — 59,000
-- `Werneror/唐.csv` — 49,193
+- `Werneror/唐.csv` — 49,192
 - `Werneror/清_1.csv` — 45,091
 - `Werneror/清_2.csv` — 44,998
 - `Werneror/元.csv` — 37,374
@@ -55,7 +55,7 @@
 - `Werneror/汉.csv` — 363
 - `Werneror/宋末金初.csv` — 234
 - `Werneror/辽.csv` — 22
-- `《全唐诗》通行本` — 2
+- `《全唐诗》通行本` — 3
 - `Werneror/秦.csv` — 2
 - `《毛泽东诗词集》(人民文学出版社,中央文献研究室编)` — 2
 - `《全元诗》` — 1
@@ -105,7 +105,7 @@
 | ⚠in-copyright(2027) | 2 | restricted |
 | ⚠in-copyright(2074) | 1 | restricted |
 
-provenance.type:upstream=970,315 · curated=10
+provenance.type:upstream=970,314 · curated=11
 
 ## 5. 去重 (dup_group,同 author+正文 归一组,**不删**)
 
@@ -154,6 +154,7 @@ provenance.type:upstream=970,315 · curated=10
 |---|---|---:|---|
 | 十里黄云白日曛 | 十里黄云白日曛 → 千里黄云白日曛 | 2 | PD |
 | 玉箫吹老洞庭波 | 玉箫吹老洞庭波 → 西风吹老洞庭波 | 1 | PD |
+| 汉皇重色思倾国 | 待儿扶起娇无力 → 侍儿扶起娇无力 | 1 | PD |
 | （restricted·正文已隐去） | — | 2 | ⚠in-copyright(2027) |
 
 ## 8. §7 验收清单逐条

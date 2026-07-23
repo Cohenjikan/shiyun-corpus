@@ -9,7 +9,7 @@
 {"id":"126fd9ff","name":"苏轼","dynasty":"song","poemCount":3596,"genres":["ci","shi"],"has_curated":false}
 {"id":"f88b7f77","name":"方回","dynasty":"song","poemCount":3226,"genres":["ci","shi"],"has_curated":false}
 {"id":"646bc953","name":"韩淲","dynasty":"song","poemCount":3135,"genres":["ci","shi"],"has_curated":false}
-{"id":"cf399cf4","name":"白居易","dynasty":"tang","poemCount":3061,"genres":["ci","shi"],"has_curated":false}
+{"id":"cf399cf4","name":"白居易","dynasty":"tang","poemCount":3061,"genres":["ci","shi"],"has_curated":true}
 {"id":"6cf90ee3","name":"梅尧臣","dynasty":"song","poemCount":3029,"genres":["ci","shi"],"has_curated":false}
 {"id":"a27b2e9d","name":"程敏政","dynasty":"ming","poemCount":2798,"genres":["ci","shi"],"has_curated":false}
 {"id":"8ce83064","name":"邓云霄","dynasty":"ming","poemCount":2761,"genres":["ci","shi"],"has_curated":false}
