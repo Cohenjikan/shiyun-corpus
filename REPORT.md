@@ -6,8 +6,8 @@
 
 **✅ PASS — 全部致命校验通过**
 
-- 总记录数:**970,325**
-- 公开层(PD 古典):**763,546**　|　隔离层(现代/在册):**206,779**
+- 总记录数:**970,326**
+- 公开层(PD 古典):**763,547**　|　隔离层(现代/在册):**206,779**
 - 诗人:公开 28156 · 隔离 5302
 - id 抽检:复算 973 条,不一致 0 条
 
@@ -15,7 +15,7 @@
 
 | 层 | 记录数 | 占比 |
 |---|---:|---:|
-| public (data/) | 763,546 | 78.69% |
+| public (data/) | 763,547 | 78.69% |
 | restricted (data/_restricted/) | 206,779 | 21.31% |
 
 来源 (provenance.source 前缀):
@@ -64,6 +64,7 @@
 - `《全元散曲》(隋树森编,中华书局)` — 1
 - `《张太岳集》(张居正)` — 1
 - `朱东润《张居正大传》所记轶事(嘉靖十六年顾璘宅题竹)` — 1
+- `《通志堂集》卷八(词三)「於中好·送梁汾南還為題小影」` — 1
 - `《迦陵诗词稿》(叶嘉莹)` — 1
 
 ## 2. 按朝代
@@ -81,7 +82,7 @@
 | 金 | jin | 5,760 | 0.59% |
 | 元 | yuan | 37,378 | 3.85% |
 | 明 | ming | 252,694 | 26.04% |
-| 清 | qing | 107,790 | 11.11% |
+| 清 | qing | 107,791 | 11.11% |
 | 近现代 | jinxiandai | 59,177 | 6.10% |
 | 当代 | dangdai | 147,602 | 15.21% |
 
@@ -90,7 +91,7 @@
 | genre | 含义 | 记录数 | 占比 |
 |---|---|---:|---:|
 | shi | 诗 | 791,379 | 81.56% |
-| ci | 词 | 93,667 | 9.65% |
+| ci | 词 | 93,668 | 9.65% |
 | xinshi | 现代新诗/自由诗 | 84,905 | 8.75% |
 | qu | 曲(散曲) | 374 | 0.04% |
 
@@ -98,14 +99,14 @@
 
 | license | 记录数 | 层 |
 |---|---:|---|
-| PD | 763,546 | public |
+| PD | 763,547 | public |
 | ⚠in-copyright(verify) | 89,842 | restricted |
 | non-commercial | 80,596 | restricted |
 | Apache-2.0 | 36,338 | restricted |
 | ⚠in-copyright(2027) | 2 | restricted |
 | ⚠in-copyright(2074) | 1 | restricted |
 
-provenance.type:upstream=970,314 · curated=11
+provenance.type:upstream=970,314 · curated=12
 
 ## 5. 去重 (dup_group,同 author+正文 归一组,**不删**)
 
@@ -114,7 +115,7 @@ provenance.type:upstream=970,314 · curated=11
 - 去重组数(size≥2):**34,251**,涉及记录 **68,516**(7.06%)
 - 组规模分布:
   - size 2: 34,244 组
-  - size 1(unique): 901,809 组
+  - size 1(unique): 901,810 组
   - size 3-5: 6 组
   - size 6-10: 1 组
   - size 11-50: 0 组
@@ -147,7 +148,7 @@ provenance.type:upstream=970,314 · curated=11
 
 ## 7. curated 校勘层
 
-- additions(补录):**5** 条
+- additions(补录):**6** 条
 - corrections(订正):
 
 | matchFirstLine | find → replace | applied | license |
